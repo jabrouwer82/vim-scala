@@ -37,18 +37,28 @@ unlet! b:current_syntax
 syn case match
 syn sync minlines=200 maxlines=1000
 
-syn keyword scalaKeyword catch do else final finally for forSome if
-syn keyword scalaKeyword match return throw try while yield macro
-syn keyword scalaKeyword class trait object extends with nextgroup=scalaInstanceDeclaration skipwhite
+syn keyword scalaKeyword final forSome match macro
+syn keyword scalaKeyword class trait extends with nextgroup=scalaInstanceDeclaration skipwhite
 syn keyword scalaKeyword case nextgroup=scalaKeyword,scalaCaseFollowing skipwhite
 syn keyword scalaKeyword val nextgroup=scalaNameDefinition,scalaQuasiQuotes skipwhite
-syn keyword scalaKeyword def var nextgroup=scalaNameDefinition skipwhite
+syn keyword scalaKeyword def nextgroup=scalaMethodDefinition skipwhite
 hi link scalaKeyword Keyword
+
+syn keyword scalaKeyword object nextgroup=scalaObjectDeclaration skipwhite
+
+syn keyword scalaConditional if else
+hi link scalaConditional Conditional
+
+syn keyword scalaException try catch finally throw
+hi link scalaException Exception
+
+syn keyword scalaRepeat do for while yield
+hi link scalaRepeat Repeat
 
 exe 'syn region scalaBlock start=/{/ end=/}/ contains=' . s:ContainedGroup() . ' fold'
 
-syn keyword scalaAkkaSpecialWord when goto using startWith initialize onTransition stay become unbecome
-hi link scalaAkkaSpecialWord PreProc
+" syn keyword scalaAkkaSpecialWord when goto using startWith initialize onTransition stay become unbecome
+" hi link scalaAkkaSpecialWord PreProc
 
 syn keyword scalatestSpecialWord shouldBe
 syn match scalatestShouldDSLA /^\s\+\zsit should/
@@ -66,30 +76,31 @@ syn match scalaChar /'\\u[A-Fa-f0-9]\{4}'/ contains=scalaUnicodeChar
 syn match scalaEscapedChar /\\[\\"'ntbrf]/
 syn match scalaUnicodeChar /\\u[A-Fa-f0-9]\{4}/
 hi link scalaChar Character
-hi link scalaEscapedChar Function
-hi link scalaUnicodeChar Special
+hi link scalaEscapedChar SpecialChar
+hi link scalaUnicodeChar SpecialChar
 
-syn match scalaOperator "||"
-syn match scalaOperator "&&"
-hi link scalaOperator Special
-
-syn match scalaNameDefinition /\<[_A-Za-z0-9$]\+\>/ contained nextgroup=scalaPostNameDefinition,scalaVariableDeclarationList
+syn match scalaNameDefinition /\<[_A-Za-z0-9\u0100-\uFFFF$]\+\>/ contained nextgroup=scalaPostNameDefinition,scalaVariableDeclarationList
+syn match scalaMethodDefinition /\<[_A-Za-z0-9\u0100-\uFFFF$]\+\>/ contained nextgroup=scalaPostNameDefinition,scalaVariableDeclarationList
 syn match scalaNameDefinition /`[^`]\+`/ contained nextgroup=scalaPostNameDefinition
 syn match scalaVariableDeclarationList /\s*,\s*/ contained nextgroup=scalaNameDefinition
 syn match scalaPostNameDefinition /\_s*:\_s*/ contained nextgroup=scalaTypeDeclaration
-hi link scalaNameDefinition Function
+hi link scalaNameDefinition Identifier
+hi link scalaMethodDefinition Function
 
 syn match scalaInstanceDeclaration /\<[_\.A-Za-z0-9$]\+\>/ contained nextgroup=scalaInstanceHash
 syn match scalaInstanceDeclaration /`[^`]\+`/ contained
 syn match scalaInstanceHash /#/ contained nextgroup=scalaInstanceDeclaration
-hi link scalaInstanceDeclaration Special
+hi link scalaInstanceDeclaration TypeDef
 hi link scalaInstanceHash Type
+
+syn match scalaObjectDeclaration /\<[_\.A-Za-z0-9$]\+\>/ contained
+hi link scalaObjectDeclaration Constant
 
 syn match scalaUnimplemented /???/
 hi link scalaUnimplemented ERROR
 
 syn match scalaCapitalWord /\<[A-Z][A-Za-z0-9$]*\>/
-hi link scalaCapitalWord Special
+hi link scalaCapitalWord scalaInstanceDeclaration
 
 " Handle type declarations specially
 syn region scalaTypeStatement matchgroup=Keyword start=/\<type\_s\+\ze/ end=/$/ contains=scalaTypeTypeDeclaration,scalaSquareBrackets,scalaTypeTypeEquals,scalaTypeStatement
@@ -98,14 +109,14 @@ syn region scalaTypeStatement matchgroup=Keyword start=/\<type\_s\+\ze/ end=/$/ 
 " of `type X =` declarations
 syn match scalaTypeTypeDeclaration /(/ contained nextgroup=scalaTypeTypeExtension,scalaTypeTypeEquals contains=scalaRoundBrackets skipwhite
 syn match scalaTypeTypeDeclaration /\%(⇒\|=>\)\ze/ contained nextgroup=scalaTypeTypeDeclaration contains=scalaTypeTypeExtension skipwhite
-syn match scalaTypeTypeDeclaration /\<[_\.A-Za-z0-9$]\+\>/ contained nextgroup=scalaTypeTypeExtension,scalaTypeTypeEquals skipwhite
+syn match scalaTypeTypeDeclaration /\<[_\.A-Za-z0-9$]\+\>/ contained nextgroup=scalaTypeTypeExtension,scalaTypegreenquals skipwhite
 syn match scalaTypeTypeEquals /=\ze[^>]/ contained nextgroup=scalaTypeTypePostDeclaration skipwhite
 syn match scalaTypeTypeExtension /)\?\_s*\zs\%(⇒\|=>\|<:\|:>\|=:=\|::\|#\)/ contained contains=scalaTypeOperator nextgroup=scalaTypeTypeDeclaration skipwhite
 syn match scalaTypeTypePostDeclaration /\<[_\.A-Za-z0-9$]\+\>/ contained nextgroup=scalaTypeTypePostExtension skipwhite
 syn match scalaTypeTypePostExtension /\%(⇒\|=>\|<:\|:>\|=:=\|::\)/ contained contains=scalaTypeOperator nextgroup=scalaTypeTypePostDeclaration skipwhite
-hi link scalaTypeTypeDeclaration Type
+hi link scalaTypeTypeDeclaration TypeDef
 hi link scalaTypeTypeExtension Keyword
-hi link scalaTypeTypePostDeclaration Special
+hi link scalaTypeTypePostDeclaration TypeDef
 hi link scalaTypeTypePostExtension Keyword
 
 syn match scalaTypeDeclaration /(/ contained nextgroup=scalaTypeExtension contains=scalaRoundBrackets skipwhite
@@ -113,7 +124,7 @@ syn match scalaTypeDeclaration /\%(⇒\|=>\)\ze/ contained nextgroup=scalaTypeDe
 syn match scalaTypeDeclaration /\<[_\.A-Za-z0-9$]\+\>/ contained nextgroup=scalaTypeExtension skipwhite
 syn match scalaTypeExtension /)\?\_s*\zs\%(⇒\|=>\|<:\|:>\|=:=\|::\|#\)/ contained contains=scalaTypeOperator nextgroup=scalaTypeDeclaration skipwhite
 hi link scalaTypeDeclaration Type
-hi link scalaTypeExtension Keyword
+hi link scalaTypeExtension Operator
 hi link scalaTypePostExtension Keyword
 
 syn match scalaTypeAnnotation /\%([_a-zA-Z0-9$\s]:\_s*\)\ze[_=(\.A-Za-z0-9$]\+/ skipwhite nextgroup=scalaTypeDeclaration contains=scalaRoundBrackets
@@ -122,18 +133,26 @@ hi link scalaTypeAnnotation Normal
 
 syn match scalaCaseFollowing /\<[_\.A-Za-z0-9$]\+\>/ contained contains=scalaCapitalWord
 syn match scalaCaseFollowing /`[^`]\+`/ contained contains=scalaCapitalWord
-hi link scalaCaseFollowing Special
+hi link scalaCaseFollowing Function
 
-syn keyword scalaKeywordModifier abstract override final lazy implicit private protected sealed null super
+syn keyword scalaNono null return
+syn keyword scalaNono var nextgroup=scalaNameDefinition skipwhite
+hi link scalaNono Exception
+
+syn keyword scalaKeywordModifier abstract override final lazy implicit private protected sealed super
 syn keyword scalaSpecialFunction implicitly require
-hi link scalaKeywordModifier Function
-hi link scalaSpecialFunction Function
+hi link scalaKeywordModifier Label
+hi link scalaSpecialFunction PreProc
 
-syn keyword scalaSpecial this true false ne eq
-syn keyword scalaSpecial new nextgroup=scalaInstanceDeclaration skipwhite
-syn match scalaSpecial "\%(=>\|⇒\|<-\|←\|->\|→\)"
-syn match scalaSpecial /`[^`]\+`/  " Backtick literals
-hi link scalaSpecial PreProc
+syn keyword scalaBoolean true false
+hi link scalaBoolean Boolean
+
+syn keyword scalaSpecialKeyword this
+syn keyword scalaSpecialKeyword new nextgroup=scalaInstanceDeclaration skipwhite
+hi link scalaSpecialKeyword Keyword
+
+syn match scalaBacktickLiteral /`[^`]\+`/  " Backtick literals
+hi link scalaBacktickLiteral Special
 
 syn keyword scalaExternal package import
 hi link scalaExternal Include
@@ -150,8 +169,8 @@ hi link scalaTripleIString String
 
 syn match scalaInterpolation /\$[a-zA-Z0-9_$]\+/ contained
 exe 'syn region scalaInterpolationB matchgroup=scalaInterpolationBoundary start=/\${/ end=/}/ contained contains=' . s:ContainedGroup()
-hi link scalaInterpolation Function
-hi link scalaInterpolationB Normal
+hi link scalaInterpolation scalaBlock
+hi link scalaInterpolationB Special
 
 syn region scalaFString matchgroup=scalaInterpolationBrackets start=/f"/ skip=/\\"/ end=/"/ contains=scalaFInterpolation,scalaFInterpolationB,scalaEscapedChar,scalaUnicodeChar
 syn match scalaFInterpolation /\$[a-zA-Z0-9_$]\+\(%[-A-Za-z0-9\.]\+\)\?/ contained
@@ -165,10 +184,11 @@ syn region scalaTripleFString matchgroup=scalaInterpolationBrackets start=/f"""/
 hi link scalaTripleString String
 hi link scalaTripleFString String
 
-hi link scalaInterpolationBrackets Special
-hi link scalaInterpolationBoundary Function
+hi link scalaInterpolationBrackets Character
+hi link scalaInterpolationBoundary Special
 
 syn match scalaNumber /\<0[dDfFlL]\?\>/ " Just a bare 0
+syn match scalaNumber /\<-\d\+[dDfFlL]\?\>/ " Negative numbers.
 syn match scalaNumber /\<[1-9]\d*[dDfFlL]\?\>/  " A multi-digit number - octal numbers with leading 0's are deprecated in Scala
 syn match scalaNumber /\<0[xX][0-9a-fA-F]\+[dDfFlL]\?\>/ " Hex number
 syn match scalaNumber /\%(\<\d\+\.\d*\|\.\d\+\)\%([eE][-+]\=\d\+\)\=[fFdD]\=/ " exponential notation 1
@@ -181,8 +201,8 @@ syn region scalaRoundBrackets start="(" end=")" skipwhite contained contains=sca
 syn region scalaSquareBrackets matchgroup=scalaSquareBracketsBrackets start="\[" end="\]" skipwhite nextgroup=scalaTypeExtension contains=scalaTypeDeclaration,scalaSquareBrackets,scalaTypeOperator,scalaTypeAnnotationParameter
 syn match scalaTypeOperator /[-+=:<>]\+/ contained
 syn match scalaTypeAnnotationParameter /@\<[`_A-Za-z0-9$]\+\>/ contained
-hi link scalaSquareBracketsBrackets Type
-hi link scalaTypeOperator Keyword
+hi link scalaSquareBracketsBrackets scalaBlock
+hi link scalaTypeOperator Operator
 hi link scalaTypeAnnotationParameter Function
 
 syn match scalaShebang "\%^#!.*" display
@@ -195,32 +215,41 @@ syn region scalaCommentCodeBlock matchgroup=Keyword start="{{{" end="}}}" contai
 syn match scalaTodo "\vTODO|FIXME|XXX" contained
 hi link scalaShebang Comment
 hi link scalaMultilineComment Comment
-hi link scalaDocLinks Function
-hi link scalaParameterAnnotation Function
-hi link scalaParamAnnotationValue Keyword
-hi link scalaCommentAnnotation Function
-hi link scalaCommentCodeBlock String
+hi link scalaDocLinks Macro
+hi link scalaParameterAnnotation Macro
+hi link scalaParamAnnotationValue Normal
+hi link scalaCommentAnnotation Macro
+hi link scalaCommentCodeBlock Normal
 hi link scalaTodo Todo
 
 syn match scalaAnnotation /@\<[`_A-Za-z0-9$]\+\>/
-hi link scalaAnnotation PreProc
+hi link scalaAnnotation Macro
 
 syn match scalaTrailingComment "//.*$" contains=scalaTodo,@Spell
 hi link scalaTrailingComment Comment
 
-syn match scalaAkkaFSM /goto([^)]*)\_s\+\<using\>/ contains=scalaAkkaFSMGotoUsing
-syn match scalaAkkaFSM /stay\_s\+using/
-syn match scalaAkkaFSM /^\s*stay\s*$/
-syn match scalaAkkaFSM /when\ze([^)]*)/
-syn match scalaAkkaFSM /startWith\ze([^)]*)/
-syn match scalaAkkaFSM /initialize\ze()/
-syn match scalaAkkaFSM /onTransition/
-syn match scalaAkkaFSM /onTermination/
-syn match scalaAkkaFSM /whenUnhandled/
-syn match scalaAkkaFSMGotoUsing /\<using\>/
-syn match scalaAkkaFSMGotoUsing /\<goto\>/
-hi link scalaAkkaFSM PreProc
-hi link scalaAkkaFSMGotoUsing PreProc
+syn match scalaSpecial /[{}:=]/
+hi link scalaSpecial Special
+
+syn match scalaOperator "\%(||\|&&\|=>\|⇒\|<-\|←\|->\|→\|\/:\|+=\|<=\|>=\|<\|>\|+\|\*\)"
+hi link scalaOperator Operator
+
+syn match scalaFPOperator "\%(\*>\|<\*\|===\|=!=\|>>=\|>>\||-|\||+|\|<+>\|<<<\|>>>\|&&&\|-<\|~>\|:<:\|&>\|<&\)"
+hi link scalaFPOperator Operator
+
+" syn match scalaAkkaFSM /goto([^)]*)\_s\+\<using\>/ contains=scalaAkkaFSMGotoUsing
+" syn match scalaAkkaFSM /stay\_s\+using/
+" syn match scalaAkkaFSM /^\s*stay\s*$/
+" syn match scalaAkkaFSM /when\ze([^)]*)/
+" syn match scalaAkkaFSM /startWith\ze([^)]*)/
+" syn match scalaAkkaFSM /initialize\ze()/
+" syn match scalaAkkaFSM /onTransition/
+" syn match scalaAkkaFSM /onTermination/
+" syn match scalaAkkaFSM /whenUnhandled/
+" syn match scalaAkkaFSMGotoUsing /\<using\>/
+" syn match scalaAkkaFSMGotoUsing /\<goto\>/
+" hi link scalaAkkaFSM PreProc
+" hi link scalaAkkaFSMGotoUsing PreProc
 
 let b:current_syntax = 'scala'
 
