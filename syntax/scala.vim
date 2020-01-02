@@ -234,7 +234,7 @@ hi link scalaSpecial Special
 syn match scalaOperator "\%(||\|&&\|=>\|⇒\|<-\|←\|->\|→\|\/:\|+=\|<=\|>=\|<\|>\|+\|\*\)"
 hi link scalaOperator Operator
 
-syn match scalaFPOperator "\%(\*>\|<\*\|===\|=!=\|>>=\|>>\||-|\||+|\|<+>\|<<<\|>>>\|&&&\|-<\|~>\|:<:\|&>\|<&\)"
+syn match scalaFPOperator "\%(\*>\|<\*\|===\|=!=\|>>=\|>>\||-|\||+|\|<+>\|<<<\|>>>\|&&&\|-<\|\~>\|:<:\|&>\|<&\)"
 hi link scalaFPOperator Operator
 
 " syn match scalaAkkaFSM /goto([^)]*)\_s\+\<using\>/ contains=scalaAkkaFSMGotoUsing
